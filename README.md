@@ -10,15 +10,14 @@ Supports intuitive input formats like `1h 30m`, `01:30:00`, or `5400` and provid
 
 ## ✅ Features:
 
-- 🧠 **Flexible input support**: parse durations from strings, numbers, or colon-formatted time
-- 🔄 **Conversion**: to seconds, minutes, arrays, strings, and JSON
-- 🎯 **Custom formatting** with tokens (`d`, `hh`, `mm`, `ss`, etc.)
-- 🗓️ **Support for days** with customizable `hoursPerDay`
-- 🧾 **Human-readable output** (`1h 30m`)
-- ♻️ **Chainable and reusable instance**
-- 📦 **Implements** `JsonSerializable` and `Stringable`
-- ✅ **Fully tested** with 100% PHPUnit coverage (61 tests, 134 assertions)
-- ⚙️ **PHP 8.1+ required**
+- Flexible input support: parse durations from strings, numbers, or colon-formatted time
+- Conversion to seconds, minutes, arrays, strings, and JSON
+- Custom formatting with tokens (`d`, `hh`, `mm`, `ss`, etc.)
+- Support for days with customizable `hoursPerDay`
+- Human-readable output (`1h 30m`)
+- Chainable and reusable instance
+- Implements `JsonSerializable` and `Stringable`
+- Fully tested with 100% PHPUnit coverage (61 tests, 134 assertions)
 
 ---
 
@@ -116,7 +115,7 @@ echo $duration->humanize(); // "2d 3h 15m"
 
 ## 🧪 Tests
 
-This library is fully tested with [PHPUnit](https://phpunit.de):
+This library is tested with [PHPUnit](https://phpunit.de):
 
 - ✅ 61 tests
 - ✅ 134 assertions
@@ -140,7 +139,7 @@ vendor/bin/phpunit
 ## 👏 Credits
 
 This library is inspired by and originally based on [Kevin Hill’s `php-duration`](https://github.com/kevinkhill/php-duration), with significant improvements in architecture, extensibility, and formatting capabilities.  
-All parsing, formatting, and conversion logic has been modernized and rigorously tested.
+Parsing, formatting, and conversion logic has been modernized and tested.
 
 ---
 
