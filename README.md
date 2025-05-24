@@ -26,7 +26,7 @@ Supports intuitive input formats like `1h 30m`, `01:30:00`, or `5400` and provid
 Install via [Composer](https://getcomposer.org):
 
 ```bash
-composer require demirk/php-duration-formatter
+composer require demirkaric/php-duration-formatter
 ```
 
 ---
