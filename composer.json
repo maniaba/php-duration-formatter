@@ -1,5 +1,5 @@
 {
-    "name": "demirk/php-duration-formatter",
+    "name": "demirkaric/php-duration-formatter",
     "description": "A PHP library for parsing and formatting time durations.",
     "require": {
         "phpunit/phpunit": "^11.0"
