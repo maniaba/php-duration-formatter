@@ -55,7 +55,7 @@ final class TimeDuration implements JsonSerializable, Stringable
         $this->reset();
 
         if (is_numeric($duration)) {
-            return $this->parseNumeric($duration);
+            return $this->parseNumeric((float)$duration);
         }
 
         $totalSeconds = 0.0;
