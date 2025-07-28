@@ -8,9 +8,25 @@
         </testsuite>
     </testsuites>
 
-    <coverage>
-        <include>
-            <directory suffix=".php">./src</directory>
-        </include>
+    <coverage includeUncoveredFiles="true">
+        <report>
+            <clover outputFile="build/phpunit/clover.xml"/>
+            <html outputDirectory="build/phpunit/html"/>
+            <php outputFile="build/phpunit/coverage.serialized"/>
+            <text outputFile="php://stdout" showUncoveredFiles="false"/>
+            <xml outputDirectory="build/phpunit/xml-coverage"/>
+        </report>
     </coverage>
+
+    <logging>
+        <testdoxHtml outputFile="build/phpunit/testdox.html"/>
+        <testdoxText outputFile="build/phpunit/testdox.txt"/>
+        <junit outputFile="build/phpunit/junit.xml"/>
+    </logging>
+
+    <source>
+        <include>
+            <directory suffix=".php">./src/</directory>
+        </include>
+    </source>
 </phpunit>

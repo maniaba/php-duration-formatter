@@ -27,5 +27,10 @@
             "name": "Demir Karić",
             "email": "demirkaric@hotmail.com"
         }
-    ]
+    ],
+    "scripts": {
+        "test": "phpunit",
+        "test:coverage": "phpunit --coverage-html coverage",
+        "test:coverage:check": "phpunit --coverage-text"
+    }
 }
