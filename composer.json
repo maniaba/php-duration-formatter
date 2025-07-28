@@ -2,7 +2,7 @@
     "name": "demirkaric/php-duration-formatter",
     "description": "A PHP library for parsing and formatting time durations.",
     "require": {
-        "phpunit/phpunit": "^11.0"
+        "php": "^8.2"
     },
     "require-dev": {
         "phpunit/phpunit": "^11.0"
@@ -27,5 +27,10 @@
             "name": "Demir Karić",
             "email": "demirkaric@hotmail.com"
         }
-    ]
+    ],
+    "scripts": {
+        "test": "phpunit",
+        "test:coverage": "phpunit --coverage-html coverage",
+        "test:coverage:check": "phpunit --coverage-text"
+    }
 }

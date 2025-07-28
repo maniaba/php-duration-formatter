@@ -31,6 +31,54 @@ final class TimeDuration implements JsonSerializable, Stringable
     }
 
     /**
+     * Create a TimeDuration instance from seconds
+     */
+    public static function fromSeconds(float|int $seconds, int $hoursPerDay = 24, string $format = 'hh:mm:SS'): self
+    {
+        return new self($seconds, $hoursPerDay, $format);
+    }
+
+    /**
+     * Create a TimeDuration instance from minutes
+     */
+    public static function fromMinutes(float|int $minutes, int $hoursPerDay = 24, string $format = 'hh:mm:SS'): self
+    {
+        return new self($minutes * self::MINUTE, $hoursPerDay, $format);
+    }
+
+    /**
+     * Create a TimeDuration instance from hours
+     */
+    public static function fromHours(float|int $hours, int $hoursPerDay = 24, string $format = 'hh:mm:SS'): self
+    {
+        return new self($hours * self::HOUR, $hoursPerDay, $format);
+    }
+
+    /**
+     * Create a TimeDuration instance from days
+     */
+    public static function fromDays(float|int $days, int $hoursPerDay = 24, string $format = 'hh:mm:SS'): self
+    {
+        return new self($days * self::DAY, $hoursPerDay, $format);
+    }
+
+    /**
+     * Create a TimeDuration instance from a string format
+     */
+    public static function fromString(string $duration, int $hoursPerDay = 24, string $format = 'hh:mm:SS'): self
+    {
+        return new self($duration, $hoursPerDay, $format);
+    }
+
+    /**
+     * Create an empty TimeDuration instance (0 duration)
+     */
+    public static function zero(int $hoursPerDay = 24, string $format = 'hh:mm:SS'): self
+    {
+        return new self(0, $hoursPerDay, $format);
+    }
+
+    /**
      * Parses a duration value given in various formats and converts it into structured time components.
      *
      * Supported input formats:

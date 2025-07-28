@@ -1,10 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="vendor/autoload.php"
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+         backupGlobals="false"
+         beStrictAboutOutputDuringTests="true"
          colors="true"
-         verbose="true">
+         executionOrder="random"
+         failOnRisky="true"
+         failOnWarning="true"
+         stopOnError="false"
+         stopOnFailure="false"
+         stopOnIncomplete="false"
+         stopOnSkipped="false"
+         cacheDirectory="build/.phpunit.cache"
+         beStrictAboutCoverageMetadata="true">
     <testsuites>
         <testsuite name="TimeDuration Test Suite">
             <directory>./tests</directory>
         </testsuite>
     </testsuites>
+
+    <coverage includeUncoveredFiles="true">
+        <report>
+            <clover outputFile="build/phpunit/clover.xml"/>
+            <html outputDirectory="build/phpunit/html"/>
+            <php outputFile="build/phpunit/coverage.serialized"/>
+            <text outputFile="php://stdout" showUncoveredFiles="false"/>
+            <xml outputDirectory="build/phpunit/xml-coverage"/>
+        </report>
+    </coverage>
+
+    <logging>
+        <testdoxHtml outputFile="build/phpunit/testdox.html"/>
+        <testdoxText outputFile="build/phpunit/testdox.txt"/>
+        <junit outputFile="build/phpunit/junit.xml"/>
+    </logging>
+
+    <source>
+        <include>
+            <directory suffix=".php">./src/</directory>
+        </include>
+    </source>
 </phpunit>
