@@ -1,6 +1,6 @@
 <?php
 
-namespace Demirk\tests;
+namespace Demirk\Tests;
 
 use Demirk\PhpDurationFormatter\TimeDuration;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -400,6 +400,207 @@ final class TimeDurationTest extends TestCase
                 "valid() and parse() results should be consistent for input: '{$testCase}'"
             );
         }
+    }
+
+    /**
+     * Tests TimeDuration::fromSeconds() static factory method
+     */
+    public function testFromSeconds(): void
+    {
+        $duration = TimeDuration::fromSeconds(3661);
+
+        $this->assertSame(1, $this->getPrivateProperty($duration, 'hours'));
+        $this->assertSame(1, $this->getPrivateProperty($duration, 'minutes'));
+        $this->assertSame(1.0, $this->getPrivateProperty($duration, 'seconds'));
+        $this->assertSame(0, $this->getPrivateProperty($duration, 'days'));
+        $this->assertSame('01:01:01', $duration->format());
+    }
+
+    /**
+     * Tests TimeDuration::fromSeconds() with float values
+     */
+    public function testFromSecondsWithFloat(): void
+    {
+        $duration = TimeDuration::fromSeconds(90.5);
+
+        $this->assertSame(1, $this->getPrivateProperty($duration, 'minutes'));
+        $this->assertSame(30.5, $this->getPrivateProperty($duration, 'seconds'));
+        $this->assertSame('00:01:30.5', $duration->format('hh:mm:s'));
+    }
+
+    /**
+     * Tests TimeDuration::fromMinutes() static factory method
+     */
+    public function testFromMinutes(): void
+    {
+        $duration = TimeDuration::fromMinutes(90);
+
+        $this->assertSame(1, $this->getPrivateProperty($duration, 'hours'));
+        $this->assertSame(30, $this->getPrivateProperty($duration, 'minutes'));
+        $this->assertSame(0.0, $this->getPrivateProperty($duration, 'seconds'));
+        $this->assertSame('01:30:00', $duration->format());
+    }
+
+    /**
+     * Tests TimeDuration::fromMinutes() with float values
+     */
+    public function testFromMinutesWithFloat(): void
+    {
+        $duration = TimeDuration::fromMinutes(1.5);
+
+        $this->assertSame(1, $this->getPrivateProperty($duration, 'minutes'));
+        $this->assertSame(30.0, $this->getPrivateProperty($duration, 'seconds'));
+        $this->assertSame('00:01:30', $duration->format());
+    }
+
+    /**
+     * Tests TimeDuration::fromHours() static factory method
+     */
+    public function testFromHours(): void
+    {
+        $duration = TimeDuration::fromHours(25);
+
+        $this->assertSame(1, $this->getPrivateProperty($duration, 'days'));
+        $this->assertSame(1, $this->getPrivateProperty($duration, 'hours'));
+        $this->assertSame(0, $this->getPrivateProperty($duration, 'minutes'));
+        $this->assertSame(0.0, $this->getPrivateProperty($duration, 'seconds'));
+        $this->assertSame('01:01:00', $duration->format('dd:hh:mm'));
+    }
+
+    /**
+     * Tests TimeDuration::fromHours() with float values
+     */
+    public function testFromHoursWithFloat(): void
+    {
+        $duration = TimeDuration::fromHours(1.5);
+
+        $this->assertSame(1, $this->getPrivateProperty($duration, 'hours'));
+        $this->assertSame(30, $this->getPrivateProperty($duration, 'minutes'));
+        $this->assertSame(0.0, $this->getPrivateProperty($duration, 'seconds'));
+        $this->assertSame('01:30:00', $duration->format());
+    }
+
+    /**
+     * Tests TimeDuration::fromDays() static factory method
+     */
+    public function testFromDays(): void
+    {
+        $duration = TimeDuration::fromDays(2);
+
+        $this->assertSame(2, $this->getPrivateProperty($duration, 'days'));
+        $this->assertSame(0, $this->getPrivateProperty($duration, 'hours'));
+        $this->assertSame(0, $this->getPrivateProperty($duration, 'minutes'));
+        $this->assertSame(0.0, $this->getPrivateProperty($duration, 'seconds'));
+        $this->assertSame('02 00:00:00', $duration->format('dd hh:mm:ss'));
+    }
+
+    /**
+     * Tests TimeDuration::fromDays() with float values
+     */
+    public function testFromDaysWithFloat(): void
+    {
+        $duration = TimeDuration::fromDays(1.5);
+
+        $this->assertSame(1, $this->getPrivateProperty($duration, 'days'));
+        $this->assertSame(12, $this->getPrivateProperty($duration, 'hours'));
+        $this->assertSame(0, $this->getPrivateProperty($duration, 'minutes'));
+        $this->assertSame(0.0, $this->getPrivateProperty($duration, 'seconds'));
+        $this->assertSame('01 12:00:00', $duration->format('dd hh:mm:ss'));
+    }
+
+    /**
+     * Tests TimeDuration::fromString() static factory method with various string formats
+     */
+    public function testFromString(): void
+    {
+        // Test with unit-based format
+        $duration1 = TimeDuration::fromString('1h 30m 45s');
+        $this->assertSame('01:30:45', $duration1->format());
+
+        // Test with colon format
+        $duration2 = TimeDuration::fromString('02:15:30');
+        $this->assertSame('02:15:30', $duration2->format());
+
+        // Test with mixed format
+        $duration3 = TimeDuration::fromString('1d 2h 30m');
+        $this->assertSame('01 02:30:00', $duration3->format('dd hh:mm:ss'));
+    }
+
+    /**
+     * Tests TimeDuration::zero() static factory method
+     */
+    public function testZero(): void
+    {
+        $duration = TimeDuration::zero();
+
+        $this->assertSame(0, $this->getPrivateProperty($duration, 'days'));
+        $this->assertSame(0, $this->getPrivateProperty($duration, 'hours'));
+        $this->assertSame(0, $this->getPrivateProperty($duration, 'minutes'));
+        $this->assertSame(0.0, $this->getPrivateProperty($duration, 'seconds'));
+        $this->assertSame('00:00:00', $duration->format());
+        $this->assertSame(0.0, $duration->toSeconds());
+        $this->assertSame('0s', $duration->humanize());
+    }
+
+    /**
+     * Tests static factory methods with custom hoursPerDay parameter
+     */
+    public function testStaticMethodsWithCustomHoursPerDay(): void
+    {
+        // Test with 8 hours per day
+        $duration = TimeDuration::fromHours(16, 8);
+
+        $this->assertSame(2, $this->getPrivateProperty($duration, 'days'));
+        $this->assertSame(0, $this->getPrivateProperty($duration, 'hours'));
+        $this->assertSame(8, $duration->hoursPerDay);
+    }
+
+    /**
+     * Tests static factory methods with custom format parameter
+     */
+    public function testStaticMethodsWithCustomFormat(): void
+    {
+        $duration = TimeDuration::fromMinutes(90, 24, 'H:mm');
+
+        $this->assertSame('H:mm', $duration->format);
+        $this->assertSame('1:30', $duration->format());
+    }
+
+    /**
+     * Tests edge cases for static factory methods
+     */
+    public function testStaticMethodsEdgeCases(): void
+    {
+        // Test zero values
+        $this->assertSame(0.0, TimeDuration::fromSeconds(0)->toSeconds());
+        $this->assertSame(0.0, TimeDuration::fromMinutes(0)->toSeconds());
+        $this->assertSame(0.0, TimeDuration::fromHours(0)->toSeconds());
+        $this->assertSame(0.0, TimeDuration::fromDays(0)->toSeconds());
+
+        // Test large values
+        $largeDuration = TimeDuration::fromSeconds(90061); // 1 day, 1 hour, 1 minute, 1 second
+        $this->assertSame(1, $this->getPrivateProperty($largeDuration, 'days'));
+        $this->assertSame(1, $this->getPrivateProperty($largeDuration, 'hours'));
+        $this->assertSame(1, $this->getPrivateProperty($largeDuration, 'minutes'));
+        $this->assertSame(1.0, $this->getPrivateProperty($largeDuration, 'seconds'));
+    }
+
+    /**
+     * Tests that static factory methods create equivalent instances to constructor
+     */
+    public function testStaticMethodsEquivalentToConstructor(): void
+    {
+        // Test seconds equivalence
+        $constructorDuration = new TimeDuration(3600);
+        $staticDuration = TimeDuration::fromSeconds(3600);
+        $this->assertSame($constructorDuration->toSeconds(), $staticDuration->toSeconds());
+        $this->assertSame($constructorDuration->format(), $staticDuration->format());
+
+        // Test string equivalence
+        $constructorStringDuration = new TimeDuration('1h 30m');
+        $staticStringDuration = TimeDuration::fromString('1h 30m');
+        $this->assertSame($constructorStringDuration->toSeconds(), $staticStringDuration->toSeconds());
+        $this->assertSame($constructorStringDuration->format(), $staticStringDuration->format());
     }
 
     /**
