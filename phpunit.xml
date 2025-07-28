@@ -1,7 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="vendor/autoload.php"
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+         backupGlobals="false"
+         beStrictAboutOutputDuringTests="true"
          colors="true"
-         verbose="true">
+         executionOrder="random"
+         failOnRisky="true"
+         failOnWarning="true"
+         stopOnError="false"
+         stopOnFailure="false"
+         stopOnIncomplete="false"
+         stopOnSkipped="false"
+         cacheDirectory="build/.phpunit.cache"
+         beStrictAboutCoverageMetadata="true">
     <testsuites>
         <testsuite name="TimeDuration Test Suite">
             <directory>./tests</directory>
