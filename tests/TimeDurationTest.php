@@ -129,6 +129,89 @@ final class TimeDurationTest extends TestCase
     }
 
     /**
+     * Data provider for valid duration formats that should return true
+     */
+    public static function provideValidDurations(): iterable
+    {
+        // Numeric formats
+        yield 'positive integer' => [3600, true];
+        yield 'positive float' => [3661.5, true];
+        yield 'zero' => [0, true];
+        yield 'zero float' => [0.0, true];
+
+        // String numeric formats
+        yield 'string positive integer' => ['3600', true];
+        yield 'string positive float' => ['3661.5', true];
+        yield 'string zero' => ['0', true];
+
+        // Colon-separated formats
+        yield 'HH:MM format' => ['01:30', true];
+        yield 'HH:MM:SS format' => ['01:30:45', true];
+        yield 'H:M format' => ['1:5', true];
+        yield 'H:M:S format' => ['1:5:30', true];
+        yield 'zero time HH:MM' => ['00:00', true];
+        yield 'zero time HH:MM:SS' => ['00:00:00', true];
+        yield 'large hours' => ['25:30:45', true];
+
+        // Unit-based formats
+        yield 'hours only' => ['2h', true];
+        yield 'minutes only' => ['30m', true];
+        yield 'seconds only' => ['45s', true];
+        yield 'zero hours' => ['0h', true];
+        yield 'zero minutes' => ['0m', true];
+        yield 'zero seconds' => ['0s', true];
+        yield 'hours and minutes' => ['1h 30m', true];
+        yield 'hours minutes seconds' => ['1h 30m 45s', true];
+        yield 'mixed case' => ['1H 30M 45S', true];
+        yield 'with spaces' => ['1h  30m  45s', true];
+        yield 'without spaces' => ['1h30m45s', true];
+        yield 'decimal hours' => ['1.5h', true];
+        yield 'decimal seconds' => ['45.5s', true];
+
+        // Days format
+        yield 'days only' => ['2d', true];
+        yield 'zero days' => ['0d', true];
+        yield 'days with hours' => ['1d 5h', true];
+        yield 'days mixed case' => ['1D 5H', true];
+        yield 'decimal days' => ['1.5d', true];
+
+        // Complex combinations
+        yield 'days hours minutes seconds' => ['1d 2h 30m 45s', true];
+        yield 'days with colon time' => ['1d 10:30:45', true];
+        yield 'mixed formats' => ['2d 1h 30m', true];
+    }
+
+    /**
+     * Data provider for invalid duration formats that should return false
+     */
+    public static function provideInvalidDurations(): iterable
+    {
+        // Negative values
+        yield 'negative integer' => [-3600, false];
+        yield 'negative float' => [-3661.5, false];
+        yield 'negative string' => ['-3600', false];
+
+        // Invalid strings
+        yield 'empty string' => ['', false];
+        yield 'whitespace only' => ['   ', false];
+        yield 'random text' => ['invalid', false];
+        yield 'random characters' => ['xyz123', false];
+
+        // Invalid colon formats
+        yield 'single colon' => ['30:', false];
+        yield 'non-numeric colon format' => ['aa:bb', false];
+
+        // Invalid unit formats
+        yield 'invalid unit' => ['30x', false];
+        yield 'missing number' => ['h', false];
+        yield 'just units' => ['hms', false];
+
+        // Boolean and other types would be handled by type system, but let's test edge cases
+        yield 'null string' => ['null', false];
+        yield 'boolean string' => ['true', false];
+    }
+
+    /**
      * Tests parsing of a numeric duration (in seconds with decimal) into hours, minutes, and seconds.
      *
      * @throws ReflectionException
@@ -260,6 +343,63 @@ final class TimeDurationTest extends TestCase
         $duration = new TimeDuration('2h 15m');
 
         $this->assertSame('02:15:00', (string) $duration);
+    }
+
+    /**
+     * Tests the valid() static method with various valid duration formats
+     *
+     * @param mixed $duration The duration input to validate
+     * @param bool $expected The expected validation result
+     */
+    #[DataProvider('provideValidDurations')]
+    public function testValidWithValidDurations(mixed $duration, bool $expected): void
+    {
+        $result = TimeDuration::valid($duration);
+        $this->assertSame($expected, $result, "Duration '{$duration}' should be valid but returned false");
+    }
+
+    /**
+     * Tests the valid() static method with various invalid duration formats
+     *
+     * @param mixed $duration The duration input to validate
+     * @param bool $expected The expected validation result
+     */
+    #[DataProvider('provideInvalidDurations')]
+    public function testValidWithInvalidDurations(mixed $duration, bool $expected): void
+    {
+        $result = TimeDuration::valid($duration);
+        $this->assertSame($expected, $result, "Duration '{$duration}' should be invalid but returned true");
+    }
+
+    /**
+     * Tests that valid() method is consistent with parse() method results
+     */
+    public function testValidConsistencyWithParse(): void
+    {
+        $testCases = [
+            '1h 30m',
+            '00:30',
+            '1d',
+            '0s',
+            'invalid',
+            '',
+            -100,
+            3600
+        ];
+
+        foreach ($testCases as $testCase) {
+            $temp = new TimeDuration();
+            $parseResult = $temp->parse($testCase);
+            $validResult = TimeDuration::valid($testCase);
+
+            $expectedValid = $parseResult !== false;
+
+            $this->assertSame(
+                $expectedValid,
+                $validResult,
+                "valid() and parse() results should be consistent for input: '{$testCase}'"
+            );
+        }
     }
 
     /**
