@@ -13,6 +13,11 @@
             "Demirk\\PhpDurationFormatter\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Demirk\\Tests\\": "tests/"
+        }
+    },
     "authors": [
         {
             "name": "Amel Junuzović",
