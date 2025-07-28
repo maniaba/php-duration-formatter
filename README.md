@@ -117,8 +117,7 @@ echo $duration->humanize(); // "2d 3h 15m"
 
 This library is tested with [PHPUnit](https://phpunit.de):
 
-- ✅ 111 tests
-- ✅ 191 assertions
+[![Coverage Status](https://coveralls.io/repos/github/demirkaric/php-duration-formatter/badge.svg?branch=feat-static-instance)](https://coveralls.io/github/demirkaric/php-duration-formatter?branch=feat-static-instance)
 - ✅ Covers parsing, formatting, rounding, edge cases, and serialization
 
 To run tests:
