@@ -117,8 +117,8 @@ echo $duration->humanize(); // "2d 3h 15m"
 
 This library is tested with [PHPUnit](https://phpunit.de):
 
-- ✅ 61 tests
-- ✅ 134 assertions
+- ✅ 111 tests
+- ✅ 191 assertions
 - ✅ Covers parsing, formatting, rounding, edge cases, and serialization
 
 To run tests:

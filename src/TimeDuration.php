@@ -7,22 +7,24 @@ namespace Demirk\PhpDurationFormatter;
 use InvalidArgumentException;
 use JsonSerializable;
 use Stringable;
+
 final class TimeDuration implements JsonSerializable, Stringable
 {
     private const SECOND = 1;
     private const MINUTE = 60;
-    private const HOUR   = 3600;
-    private const DAY    = 86400;
-    private int $days          = 0;
-    private int $hours         = 0;
-    private int $minutes       = 0;
+    private const HOUR = 3600;
+    private const DAY = 86400;
+    private int $days = 0;
+    private int $hours = 0;
+    private int $minutes = 0;
     private float|int $seconds = 0.0;
 
     public function __construct(
-        float|int|string|null $duration = null,
-        public readonly int $hoursPerDay = 24,
+        float|int|string|null  $duration = null,
+        public readonly int    $hoursPerDay = 24,
         public readonly string $format = 'hh:mm:SS',
-    ) {
+    )
+    {
         if (null !== $duration) {
             $this->parse($duration);
         }
@@ -55,38 +57,46 @@ final class TimeDuration implements JsonSerializable, Stringable
         $this->reset();
 
         if (is_numeric($duration)) {
+            if ($duration < 0) {
+                return false; // Negative durations are not allowed
+            }
+
             return $this->parseNumeric((float)$duration);
         }
 
         $totalSeconds = 0.0;
+        $hasMatch = false;
 
         if (preg_match('/([0-9.]+)\s?[dD]/', $duration, $matches)) {
-            $num = (float) $matches[1];
+            $num = (float)$matches[1];
             $totalSeconds += $num * self::DAY;
+            $hasMatch = true;
         }
 
         $regex = '/\b(?P<hours>\d{1,4}):(?P<minutes>\d{1,4})(?::(?P<seconds>\d{1,4}))?\b/';
 
         if (preg_match($regex, $duration, $matches)) {
-            $totalSeconds += (isset($matches['hours']) ? (int) $matches['hours'] : 0) * self::HOUR;
-            $totalSeconds += (isset($matches['minutes']) ? (int) $matches['minutes'] : 0) * self::MINUTE;
-            $totalSeconds += isset($matches['seconds']) ? (int) $matches['seconds'] : 0;
+            $totalSeconds += (isset($matches['hours']) ? (int)$matches['hours'] : 0) * self::HOUR;
+            $totalSeconds += (isset($matches['minutes']) ? (int)$matches['minutes'] : 0) * self::MINUTE;
+            $totalSeconds += isset($matches['seconds']) ? (int)$matches['seconds'] : 0;
+            $hasMatch = true;
         } else {
             $times = [
-                self::HOUR   => '/([0-9.]+)\s?[hH]/',
+                self::HOUR => '/([0-9.]+)\s?[hH]/',
                 self::MINUTE => '/([0-9]{1,4})\s?[mM]/',
                 self::SECOND => '/([0-9]{1,4}(\.\d+)?)\s?[sS]/',
             ];
 
             foreach ($times as $unit => $regex) {
                 if (preg_match($regex, $duration, $matches)) {
-                    $num = (float) $matches[1];
+                    $num = (float)$matches[1];
                     $totalSeconds += $num * $unit;
+                    $hasMatch = true;
                 }
             }
         }
 
-        if ($totalSeconds <= 0) {
+        if (!$hasMatch || $totalSeconds < 0) {
             return false;
         }
 
@@ -103,8 +113,8 @@ final class TimeDuration implements JsonSerializable, Stringable
     {
         $this->seconds = 0.0;
         $this->minutes = 0;
-        $this->hours   = 0;
-        $this->days    = 0;
+        $this->hours = 0;
+        $this->days = 0;
     }
 
     /**
@@ -124,28 +134,33 @@ final class TimeDuration implements JsonSerializable, Stringable
      */
     private function parseNumeric(float|int $duration): TimeDuration
     {
-        $this->seconds = (float) $duration;
+        // Allow zero duration
+        if ($duration < 0) {
+            return $this;
+        }
+
+        $this->seconds = (float)$duration;
 
         if ($this->seconds >= 60) {
-            $this->minutes = (int) floor($this->seconds / 60);
+            $this->minutes = (int)floor($this->seconds / 60);
 
             // count current precision
             $precision = 0;
-            if (($delimiterPos = strpos((string) $this->seconds, '.')) !== false) {
-                $precision = strlen(substr((string) $this->seconds, $delimiterPos + 1));
+            if (($delimiterPos = strpos((string)$this->seconds, '.')) !== false) {
+                $precision = strlen(substr((string)$this->seconds, $delimiterPos + 1));
             }
 
             $this->seconds = round(($this->seconds - ($this->minutes * 60)), $precision);
         }
 
         if ($this->minutes >= 60) {
-            $this->hours   = (int) floor($this->minutes / 60);
-            $this->minutes = (int) ($this->minutes - ($this->hours * 60));
+            $this->hours = (int)floor($this->minutes / 60);
+            $this->minutes = (int)($this->minutes - ($this->hours * 60));
         }
 
         if ($this->hours >= $this->hoursPerDay) {
-            $this->days  = (int) floor($this->hours / $this->hoursPerDay);
-            $this->hours = (int) ($this->hours - ($this->days * $this->hoursPerDay));
+            $this->days = (int)floor($this->hours / $this->hoursPerDay);
+            $this->hours = (int)($this->hours - ($this->days * $this->hoursPerDay));
         }
 
         // If the format does not contain seconds, set seconds to 0
@@ -154,6 +169,26 @@ final class TimeDuration implements JsonSerializable, Stringable
         }
 
         return $this;
+    }
+
+    /**
+     * Validates whether a duration input can be successfully parsed.
+     *
+     * This static method checks if the provided duration string or numeric value
+     * can be successfully parsed by creating a temporary instance and attempting to parse it.
+     *
+     * @param float|int|string $duration Duration input to validate
+     * @return bool True if the duration can be parsed, false otherwise
+     */
+    public static function valid(float|int|string $duration): bool
+    {
+        try {
+            $temp = new self();
+            $result = $temp->parse($duration);
+            return $result !== false;
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     /**
@@ -191,9 +226,9 @@ final class TimeDuration implements JsonSerializable, Stringable
     {
         return [
             'seconds' => $this->toSeconds(),
-            'values'  => [
-                'days'    => $this->days,
-                'hours'   => $this->hours,
+            'values' => [
+                'days' => $this->days,
+                'hours' => $this->hours,
                 'minutes' => $this->minutes,
                 'seconds' => $this->seconds,
             ],
@@ -207,8 +242,8 @@ final class TimeDuration implements JsonSerializable, Stringable
      *
      * For example, one hour and 42 minutes would be "6120."
      *
-     * @param float|int|string|null $duration  A string or number, representing a duration
-     * @param int|null              $precision Number of decimal digits to round to. If set to false, the number is not rounded.
+     * @param float|int|string|null $duration A string or number, representing a duration
+     * @param int|null $precision Number of decimal digits to round to. If set to false, the number is not rounded.
      */
     public function toSeconds(float|int|string|null $duration = null, ?int $precision = null): float|int
     {
@@ -260,18 +295,18 @@ final class TimeDuration implements JsonSerializable, Stringable
         $pattern ??= $this->format;
 
         $replacements = [
-            'dd' => str_pad((string) $this->days, 2, '0', STR_PAD_LEFT),
-            'd'  => (string) $this->days,
-            'hh' => str_pad((string) $this->hours, 2, '0', STR_PAD_LEFT),
-            'h'  => (string) $this->hours,
-            'HH' => str_pad((string) ($this->hours + $this->days * $this->hoursPerDay), 2, '0', STR_PAD_LEFT),
-            'H'  => (string) ($this->hours + $this->days * $this->hoursPerDay),
-            'mm' => str_pad((string) $this->minutes, 2, '0', STR_PAD_LEFT),
-            'm'  => (string) $this->minutes,
-            'ss' => str_pad((string) $this->seconds, 2, '0', STR_PAD_LEFT),
-            's'  => (string) $this->seconds,
+            'dd' => str_pad((string)$this->days, 2, '0', STR_PAD_LEFT),
+            'd' => (string)$this->days,
+            'hh' => str_pad((string)$this->hours, 2, '0', STR_PAD_LEFT),
+            'h' => (string)$this->hours,
+            'HH' => str_pad((string)($this->hours + $this->days * $this->hoursPerDay), 2, '0', STR_PAD_LEFT),
+            'H' => (string)($this->hours + $this->days * $this->hoursPerDay),
+            'mm' => str_pad((string)$this->minutes, 2, '0', STR_PAD_LEFT),
+            'm' => (string)$this->minutes,
+            'ss' => str_pad((string)$this->seconds, 2, '0', STR_PAD_LEFT),
+            's' => (string)$this->seconds,
             'SS' => str_pad(number_format($this->seconds, 0, '.', ''), 2, '0', STR_PAD_LEFT),
-            'S'  => number_format($this->seconds, 0, '.', ''),
+            'S' => number_format($this->seconds, 0, '.', ''),
         ];
 
         return str_replace(array_keys($replacements), array_values($replacements), $pattern);
@@ -319,8 +354,8 @@ final class TimeDuration implements JsonSerializable, Stringable
      *
      * For example, one hour and 42 minutes would be "102" minutes
      *
-     * @param float|int|string|null $duration  A string or number, representing a duration
-     * @param bool|int              $precision Number of decimal digits to round to. If set to false, the number is not rounded.
+     * @param float|int|string|null $duration A string or number, representing a duration
+     * @param bool|int $precision Number of decimal digits to round to. If set to false, the number is not rounded.
      */
     public function toMinutes(float|int|string|null $duration = null, bool|int $precision = false): float|int
     {
@@ -328,7 +363,7 @@ final class TimeDuration implements JsonSerializable, Stringable
 
         $minutes = $seconds / 60;
 
-        return $precision !== false ? round($minutes, (int) $precision) : $minutes;
+        return $precision !== false ? round($minutes, (int)$precision) : $minutes;
     }
 
     /**
